@@ -27,7 +27,9 @@ from constants import CHROMA_SETTINGS
 
 load_dotenv()
 
-
+embeddings_model_name = "all-MiniLM-L6-v2"
+persist_directory = "db"
+model = "tiiuae/falcon-7b-instruct"
 # Map file extensions to document loaders and their arguments
 LOADER_MAPPING = {
     ".csv": (CSVLoader, {}),
@@ -71,9 +73,10 @@ def load_documents(source_dir: str) -> List[Document]:
 
 def main(collection):
     # Load environment variables
-    persist_directory = os.environ.get('PERSIST_DIRECTORY')
-    source_directory = os.environ.get('SOURCE_DIRECTORY', 'source_documents')
-    embeddings_model_name = os.environ.get('EMBEDDINGS_MODEL_NAME')
+    embeddings_model_name = "all-MiniLM-L6-v2"
+    persist_directory = "db"
+    model = "tiiuae/falcon-7b-instruct"
+    source_directory = "source_documents"
     os.makedirs(source_directory, exist_ok=True)
     # Load documents and split in chunks
     print(f"Loading documents from {source_directory}")

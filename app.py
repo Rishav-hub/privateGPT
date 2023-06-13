@@ -81,11 +81,13 @@ def embed_documents(files, collection_name: Optional[str] = None):
     saved_files = []
     # Save the files to the specified folder
     for file in files:
-        file_path = os.path.join(source_directory, file.filename)
+        print(file)
+        os.makedirs(source_directory, exist_ok= True)
+        file_path = os.path.join(source_directory, file.name)
         saved_files.append(file_path)
         
         with open(file_path, "wb") as f:
-            f.write(await file.read())
+            f.write(file.read())
         
         if collection_name is None:
             # Handle the case when the collection_name is not defined
@@ -94,7 +96,7 @@ def embed_documents(files, collection_name: Optional[str] = None):
     os.system(f'python ingest.py --collection {collection_name}')
     
     # Delete the contents of the folder
-    [os.remove(os.path.join(source_directory, file.filename)) or os.path.join(source_directory, file.filename) for file in files]
+    [os.remove(os.path.join(source_directory, file.name)) or os.path.join(source_directory, file.name) for file in files]
     
     return {"message": "Files embedded successfully", "saved_files": saved_files}
 
@@ -116,4 +118,5 @@ def retrieve_documents(query: str, collection_name:str):
     print(res)   
     answer = res['result']
 
-    return {"results": answer}
+    st.subheader("Results")
+    st.text(answer)
