@@ -12,10 +12,6 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 import transformers
 from torch import cuda, bfloat16 
 
-
-
-load_dotenv()
-
 embeddings_model_name = "all-MiniLM-L6-v2"
 persist_directory = "db"
 model = "tiiuae/falcon-7b-instruct"
@@ -27,6 +23,10 @@ model = "tiiuae/falcon-7b-instruct"
 source_directory = os.environ.get('SOURCE_DIRECTORY', 'source_documents')
 
 from constants import CHROMA_SETTINGS
+
+
+embeddings = HuggingFaceEmbeddings(model_name=embeddings_model_name)
+llm = HuggingFacePipeline.from_model_id(model_id=model, task="text-generation", device=0, model_kwargs={"temperature":0.1,"trust_remote_code": True, "max_length":100000, "top_p":0.15, "top_k":0, "repetition_penalty":1.1, "num_return_sequences":1,})
 
 # async def test_embedding():
 #     # Create the folder if it doesn't exist
@@ -103,13 +103,11 @@ def embed_documents(files, collection_name: Optional[str] = None):
 def retrieve_documents(query: str, collection_name:str):
     target_source_chunks = 4
     mute_stream = ""
-    embeddings = HuggingFaceEmbeddings(model_name=embeddings_model_name)
     db = Chroma(persist_directory=persist_directory,collection_name=collection_name, embedding_function=embeddings, client_settings=CHROMA_SETTINGS)
     retriever = db.as_retriever(search_kwargs={"k": target_source_chunks})
     # Prepare the LLM
     callbacks = [] if mute_stream else [StreamingStdOutCallbackHandler()]
 
-    llm = HuggingFacePipeline.from_model_id(model_id=model, task="text-generation", device=0, model_kwargs={"temperature":0.1,"trust_remote_code": True, "max_length":100000, "top_p":0.15, "top_k":0, "repetition_penalty":1.1, "num_return_sequences":1,})
 
     qa = RetrievalQA.from_chain_type(llm=llm, chain_type="stuff", retriever=retriever, return_source_documents=False)
     
